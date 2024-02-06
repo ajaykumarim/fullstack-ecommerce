@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import Header from "./Header"
+
 
 const AdminPanel = () => {
 
@@ -9,11 +9,13 @@ const AdminPanel = () => {
   const [updatedProd,setUpdatedProd]=useState<any>(null)
   const[newProduct,setNewProduct]=useState(false)
   const[newProduct2,setNewProduct2]=useState(false)
+  const[newProductQ,setNewProductQ]=useState(false)
   const[newProduct3,setNewProduct3]=useState(false)
   const[newProduct4,setNewProduct4]=useState(false)
 
   const [newProductName,setnewProductName]=useState('')
   const [newProductPrice,setnewProductPrice]=useState('')
+  const [newProductQuantity,setnewProductQuantity]=useState('')
   const [newProductPath,setnewProductPath]=useState('')
 
   const [editProduct,setEditproduct]=useState(false)
@@ -21,10 +23,12 @@ const AdminPanel = () => {
 
   const [editName,setEditName]=useState(true)
   const [editPrice,setEditPrice]=useState(true)
+  const [editQuantity,setEditQuantity]=useState(true)
   const [editPath,setEditPath]=useState(true)
 
   const [editedName,setEditedName]=useState('')
   const[editedPrice,setEditedPrice]=useState('')
+  const[editedQuantity,setEditedQuantity]=useState('')
   const[editedPath,setEditedPath]=useState('')
   const[editedId,setEditedId]=useState(null)
 
@@ -46,19 +50,29 @@ const AdminPanel = () => {
   const productDetail3=()=>{
     if(newProductPrice!=''){
     setNewProduct(false)
-    setNewProduct3(true)
     setNewProduct2(false)
+    setNewProductQ(true)
     }else{
       alert('Product Price required!')
     }
 }
+const productDetailQ=()=>{
+  if(newProductQuantity!=''){
+   setNewProduct3(true)
+  setNewProductQ(false)
+  }else{
+    alert('Product Quantity required!')
+  }
+}
+
 
   const productDetail4=()=>{
     if(newProductPath!=''){
+      setNewProductQ(false)
     setNewProduct3(false)
     setNewProduct(false)
-    setUpdatedProd({"name":newProductName,"price":JSON.parse(newProductPrice),"imagePath":newProductPath})
     setNewProduct4(true)
+    setUpdatedProd({"name":newProductName,"price":JSON.parse(newProductPrice),"quantity":JSON.parse(newProductQuantity),"imagePath":newProductPath})
     
     
     }else{
@@ -70,6 +84,7 @@ const productDetail5=async()=>{
     setNewProduct4(false)
     setnewProductName('')
     setnewProductPrice('')
+    setnewProductQuantity('')
     setnewProductPath('')
     
     console.log(updatedProd) 
@@ -80,7 +95,8 @@ const productDetail5=async()=>{
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(updatedProd)
+        body: JSON.stringify(updatedProd),
+        credentials: 'include',
       });
 
       const responseData = await response.json();
@@ -96,7 +112,8 @@ const productDetail5=async()=>{
   const deleFunction=async (id:any)=>{
     try{
       const response=await fetch(`http://localhost:5000/api/shopping/${id}`,{
-            method:'DELETE'
+            method:'DELETE',
+            credentials: 'include',
       })
       const status=await response.json()
       console.log(status)
@@ -111,6 +128,7 @@ const productDetail5=async()=>{
       setSelectedToEdit(product)
       setEditedName(product.name)
       setEditedPrice(product.price)
+      setEditedQuantity(product.quantity)
       setEditedPath(product.imagePath)
       setEditedId(product.id)
   }
@@ -123,7 +141,8 @@ const productDetail5=async()=>{
       headers:{
         "Content-Type":"application/json"
       },
-      body:JSON.stringify({name:editedName,price:editedPrice,imagePath:editedPath})
+      credentials: 'include',
+      body:JSON.stringify({name:editedName,price:editedPrice,quantity:editedQuantity,imagePath:editedPath})
     })
     if(response.ok){
     const data=await response.json()
@@ -142,7 +161,9 @@ const productDetail5=async()=>{
 
   useEffect(() => {
     const fun = async () => {
-        const response = await fetch('http://localhost:5000/api/shopping')
+        const response = await fetch('http://localhost:5000/api/shopping',{
+          credentials: 'include',
+        })
         const products = await response.json()
         console.log(products.products)
         setProd(products.products)
@@ -155,6 +176,7 @@ const exitFun=()=>{
     setEditproduct(false)
     setEditName(true)
     setEditPrice(true)
+    setEditQuantity(true)
     setEditPath(true)
 }
 
@@ -162,6 +184,7 @@ const newProductExit=()=>{
   setNewProduct(false)
   setNewProduct2(false)
   setNewProduct3(false)
+  setNewProductQ(false)
   setNewProduct4(false)
 }
 
@@ -169,7 +192,7 @@ const newProductExit=()=>{
   return (
     <div>
       
-    <div className={newProduct||newProduct2||newProduct3||newProduct4||editProduct?"backdrop":"none"}>
+    <div className={newProduct||newProduct2||newProduct3||newProductQ||newProduct4||editProduct?"backdrop":"none"}>
     <div className="divv">
       <div className="top-div">       
         <button className="count-btn" onClick={exitFunction}>Back</button>
@@ -184,6 +207,7 @@ const newProductExit=()=>{
             <img className="panel-img" src={a.imagePath}/>
             <h3>{a.name}</h3>
             <p>{a.price}$</p>
+            <p>Quantity:{a.quantity}</p>
             </div>
             <div>
                 <button className="count-btn" onClick={()=>editFunction(a)}>Edit</button>
@@ -201,22 +225,28 @@ const newProductExit=()=>{
         <button onClick={productDetail2}  className="count-btn">Next</button>
     </div>}
     {newProduct2&&<div className="product-detail1">
-    <button className="exit-btn">x</button>
+    <button onClick={newProductExit} className="exit-btn">x</button>
         <label>Enter the product price:</label>
         <input value={newProductPrice} onChange={(e)=>setnewProductPrice(e.target.value)} className="input-bar2"/>
         <button onClick={productDetail3}  className="count-btn">Next</button>
     </div>}
+    {newProductQ&&<div className="product-detail1">
+    <button onClick={newProductExit} className="exit-btn">x</button>
+        <label>Enter the product Quantity:</label>
+        <input value={newProductQuantity} onChange={(e)=>setnewProductQuantity(e.target.value)} className="input-bar2"/>
+        <button onClick={productDetailQ}  className="count-btn">Next</button>
+    </div>}
     {newProduct3&&<div className="product-detail1">
-    <button className="exit-btn">x</button>
+    <button onClick={newProductExit} className="exit-btn">x</button>
         <label>Enter the product image path:</label>
         <input value={newProductPath} onChange={(e)=>setnewProductPath(e.target.value)} className="input-bar2"/>
         <button onClick={productDetail4} className="count-btn">next</button>
     </div>}
     {newProduct4&&<div className="product-detail1">
-    <button className="exit-btn">x</button>
+    <button onClick={newProductExit} className="exit-btn">x</button>
       <p>Click create to add {newProductName}</p>
         <button onClick={productDetail5} className="count-btn">Create</button>
-    </div>}
+    </div>} 
     {
         editProduct&&<div className="edit-block">
           <button onClick={exitFun} className="exit-btn">x</button>
@@ -231,6 +261,11 @@ const newProductExit=()=>{
           </div>:<div className="edit-div">
               <div><input className="input-bar1" value={editedPrice} onChange={(e)=>setEditedPrice(e.target.value)}/><br></br><button className="count-btn" onClick={()=>setEditPrice(true)}>save changes</button></div>
           </div>}
+          {editQuantity?<div className="edit-div">
+              <div><p className="p-tag"><b>Quantity: </b>{editedQuantity}</p><button className="count-btn " onClick={()=>setEditQuantity(false)}>Edit Product Quantity</button></div>
+          </div>:<div className="edit-div">
+              <div><input className="input-bar1" value={editedQuantity} onChange={(e)=>setEditedQuantity(e.target.value)}/><br></br><button className="count-btn" onClick={()=>setEditQuantity(true)}>save changes</button></div>
+          </div>}
           {editPath?<div className="edit-div">
               <div><p className="p-tag"><b>Path: </b>{editedPath}</p><button className="count-btn " onClick={()=>setEditPath(false)}>Edit Image Path</button></div>
           </div> :<div className="edit-div">
@@ -244,6 +279,10 @@ const newProductExit=()=>{
 }
 
 export default AdminPanel
+
+
+
+
 
 
 

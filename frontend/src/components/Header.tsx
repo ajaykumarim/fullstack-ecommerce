@@ -1,13 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
 import { FaOpencart } from "react-icons/fa6";
 import { CiLogout } from "react-icons/ci";
+
 interface HeaderProps {
     favouriteProfile:()=>void,
     count:number,
     currentUser:string,
     cuUser:any,
+    isAdmin:any,
+    setIsAdmin:React.Dispatch<React.SetStateAction<any>>
 }
-const Header: React.FC<HeaderProps> = ({favouriteProfile,count,currentUser,cuUser}) => {
+const Header: React.FC<HeaderProps> = ({favouriteProfile,count,currentUser,cuUser,isAdmin,setIsAdmin}) => {
+        const val:any=localStorage.getItem("isAdmin")
+        setIsAdmin(JSON.parse(val))
+    
     const navigate=useNavigate()
     const panelFunction=()=>{
         navigate('/AdminPanel')
@@ -16,9 +22,9 @@ const Header: React.FC<HeaderProps> = ({favouriteProfile,count,currentUser,cuUse
     <div className="header">
         <img src='https://i1.lmsin.net/website_images/in/logos/logo-lifestyle.svg'/>
         <div className="header-right">
-            {cuUser=='ajay'?<h3 onClick={panelFunction} className="admin-btn">Admin Panel</h3>:null}
+            {isAdmin?<h3 onClick={panelFunction} className="admin-btn">Admin Panel</h3>:null}
             
-        <FaOpencart className="cart-logo" onClick={favouriteProfile}/><span className="cart-count">{count}</span>
+        {!isAdmin?<><FaOpencart className="cart-logo" onClick={favouriteProfile}/><span className="cart-count">{count}</span></>:null}
         
         <Link to='/'><CiLogout className="logout-logo"/></Link>
         </div>      
@@ -27,6 +33,17 @@ const Header: React.FC<HeaderProps> = ({favouriteProfile,count,currentUser,cuUse
 }
 
 export default Header
+
+
+
+
+
+
+
+
+
+
+
 
 
 
